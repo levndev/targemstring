@@ -14,24 +14,24 @@ String::String() : _length(0), _capacity(default_capacity), _chars(new char[defa
 String::String(int capacity) : _length(0), _capacity(capacity), _chars(new char[_capacity]()) { }
 
 String::String(const char* ptr)  {
-	_length = std::strlen(ptr);
-	_capacity = _length * 2;
-	_chars = new char[_capacity];
-	std::copy(ptr, ptr + _length, _chars);
-	_chars[_length] = 0;
+    _length = std::strlen(ptr);
+    _capacity = _length * 2;
+    _chars = new char[_capacity];
+    std::copy(ptr, ptr + _length, _chars);
+    _chars[_length] = 0;
 }
 
 // Copy конструктор
 String::String(const String& original) : _length(original._length), _capacity(original._capacity) {
-	_chars = new char[_capacity];
-	std::copy(original._chars, original._chars + original._length, _chars);
+    _chars = new char[_capacity];
+    std::copy(original._chars, original._chars + original._length, _chars);
     _chars[_length] = 0;
 }
 
 // Move конструктор
 // Если после мува оригинал остается живым, то необходимо обязательно использовать String::reset(), иначе в будущем [] даст SegFault
 String::String(String&& original) noexcept : _chars(original._chars), _length(original._length), _capacity(original._capacity) {
-	original._chars = nullptr;
+    original._chars = nullptr;
     original._length = 0;
     original._capacity = 0;
 }
@@ -45,10 +45,10 @@ char& String::operator[](std::size_t i) { return _chars[i]; }
 
 // Copy assignment Использует copy-and-swap
 String& String::operator=(String other) {
-	std::swap(other._chars, _chars);
-	_length = other._length;
-	_capacity = other._capacity;
-	return *this;
+    std::swap(other._chars, _chars);
+    _length = other._length;
+    _capacity = other._capacity;
+    return *this;
 }
 
 String& String::operator=(const char* other) {
@@ -65,13 +65,13 @@ String& String::operator=(const char* other) {
 
 
 String& String::operator+=(const String& other) {
-	this->append(other.c_str(), other.length());
-	return *this;
+    this->append(other.c_str(), other.length());
+    return *this;
 }
 
 String& String::operator+=(const char* other) {
     this->append(other, std::strlen(other));
-	return *this;
+    return *this;
 }
 
 // Другие функции
@@ -84,15 +84,15 @@ char& String::at(std::size_t i) {
 
 void String::append(const char* str, std::size_t str_length) {
     std::size_t totalLength = _length + str_length;
-	if (totalLength + 1 >= _capacity) {
-		String newString = *this + str;
-		*this = newString;
-	}
-	else {
-		std::copy(str, str + str_length, _chars + _length);
-		_length = totalLength;
-		_chars[_length] = 0;
-	}
+    if (totalLength + 1 >= _capacity) {
+        String newString = *this + str;
+        *this = newString;
+    }
+    else {
+        std::copy(str, str + str_length, _chars + _length);
+        _length = totalLength;
+        _chars[_length] = 0;
+    }
 }
 
 size_t String::length() const { return _length; }
@@ -118,25 +118,25 @@ void String::reset() {
 
 char * concat(const char* lhs, std::size_t lhs_length, const char* rhs, std::size_t rhs_length) {
     char* buffer = new char[lhs_length + rhs_length + 1];
-	std::copy(lhs, lhs + lhs_length, buffer);
-	std::copy(rhs, rhs + rhs_length, buffer + lhs_length);
-	buffer[lhs_length + rhs_length] = 0;
+    std::copy(lhs, lhs + lhs_length, buffer);
+    std::copy(rhs, rhs + rhs_length, buffer + lhs_length);
+    buffer[lhs_length + rhs_length] = 0;
     return buffer;
 }
 
 // Внешние операторы
 String operator+(const String& lhs, const String& rhs) {
-	char* buffer = concat(lhs.c_str(), lhs.length(), rhs.c_str(), rhs.length());
+    char* buffer = concat(lhs.c_str(), lhs.length(), rhs.c_str(), rhs.length());
     String result = String(buffer);
     delete[] buffer;
-	return result;
+    return result;
 }
 
 String operator+(const String& lhs, const char* rhs) {
     char* buffer = concat(lhs.c_str(), lhs.length(), rhs, std::strlen(rhs));
     String result = String(buffer);
     delete[] buffer;
-	return result;
+    return result;
 }
 
 String operator+(const char* lhs, const String& rhs) { return rhs + lhs; }
