@@ -24,23 +24,23 @@ void run_tests() {
         IS_TRUE(test == String("Hello world!"));
     }
     {
-        String test = "Hello ";
+        String test = String("Hello ");
         test += "world!";
         IS_TRUE(test == "Hello world!");
     }
     {
-        String test = "Hello ";
+        String test = String("Hello ");
         test += test;
         IS_TRUE(test == "Hello Hello ");
     }
     {
         // строка в 5 символов + строка в 10 символов - capacity дложна быть 2 * 15 = 30
-        String test = "12345";
+        String test = String("12345");
         test += "0123456789";
         IS_TRUE(test.capacity() == 30);
     }
     {
-        String test = "abcd";
+        String test = String("abcd");
         IS_TRUE(test[0] == 'a');
         IS_TRUE(test[1] == 'b');
         IS_TRUE(test[2] == 'c');

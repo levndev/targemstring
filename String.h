@@ -13,7 +13,7 @@ public:
 	String();
 	String(int capacity);
 
-	String(const char* ptr);
+	explicit String(const char* ptr);
 
 	// Copy конструктор
 	String(const String& original);
@@ -29,24 +29,14 @@ public:
 	char& operator[](std::size_t i);
 	// Copy assignment использует copy-and-swap
 	String& operator=(String other);
-	// Надо сделать copy assignment с сишной строкой
+	String& operator=(const char* other);
 	String& operator+=(const String& other);
 	String& operator+=(const char* other);
 
-	//Внешние операторы
-	friend String operator+(const String& lhs, const String& rhs);
-	friend String operator+(const String& lhs, const char* rhs);
-	friend String operator+(const char* lhs, const String& rhs);
-	friend bool operator==(const String& lhs, const String &rhs);
-	friend bool operator!=(const String& lhs, const String &rhs);
-	friend bool operator< (const String& lhs, const String &rhs);
-	friend bool operator> (const String& lhs, const String &rhs);
-	friend bool operator<=(const String& lhs, const String &rhs);
-	friend bool operator>=(const String& lhs, const String &rhs);
-	friend std::ostream& operator<<(std::ostream& os, const String& rhs);
 	friend std::istream& operator>>(std::istream& is, String& rhs);
 	// Другие функции
 	char& at(std::size_t i);
+	void append(const char* str, std::size_t str_length);
 	size_t length() const;
 	size_t capacity() const;
 	bool empty() const;
@@ -59,4 +49,15 @@ public:
 	void reset();
 };
 
+char* concat(const char* lhs, std::size_t lhs_length, const char* rhs, std::size_t rhs_length);
+
+//Внешние операторы
+String operator+(const String& lhs, const String& rhs);
+String operator+(const String& lhs, const char* rhs);
+String operator+(const char* lhs, const String& rhs);
+bool operator==(const String& lhs, const char* rhs);
+bool operator!=(const String& lhs, const char* rhs);
+bool operator==(const String& lhs, const String &rhs);
+bool operator!=(const String& lhs, const String &rhs);
+std::ostream& operator<<(std::ostream& os, const String& rhs);
 #endif

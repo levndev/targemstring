@@ -39,9 +39,6 @@ int main(int argc, char ** args)
             std::cin >> line;
             strings.push_back(line);
         }
-        for (int i = 0; i < string_count; i++) {
-            std::cout << strings[i] << std::endl;
-        }
         std::sort(strings.begin(), strings.end(), case_insensitive_greater);
         std::cout << "Результат: " << std::endl;
         for (int i = 0; i < string_count; i++) {

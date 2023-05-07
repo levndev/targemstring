@@ -9,30 +9,16 @@
 
 constexpr std::size_t default_capacity = 16;
 constexpr std::size_t default_input_buffer_size = 16;
-#define DEBUG_PRINT std::cout << "Debug : " << __FUNCTION__ << " line " << __LINE__ << std::endl;
 // Конструкторы
-String::String() : _length(0), _capacity(default_capacity), _chars(new char[default_capacity]()) {
-    #ifdef DEBUG
-    DEBUG_PRINT
-    #endif
-}
-String::String(int capacity) : _length(0), _capacity(capacity), _chars(new char[capacity]()) {
-    #ifdef DEBUG
-    DEBUG_PRINT
-    #endif
-}
+String::String() : _length(0), _capacity(default_capacity), _chars(new char[default_capacity]()) { }
+String::String(int capacity) : _length(0), _capacity(capacity), _chars(new char[_capacity]()) { }
 
 String::String(const char* ptr)  {
-    if (ptr == nullptr)
-        throw std::invalid_argument("Null string");
 	_length = std::strlen(ptr);
 	_capacity = _length * 2;
 	_chars = new char[_capacity];
 	std::copy(ptr, ptr + _length, _chars);
 	_chars[_length] = 0;
-    #ifdef DEBUG
-    DEBUG_PRINT
-    #endif
 }
 
 // Copy конструктор
@@ -40,9 +26,6 @@ String::String(const String& original) : _length(original._length), _capacity(or
 	_chars = new char[_capacity];
 	std::copy(original._chars, original._chars + original._length, _chars);
     _chars[_length] = 0;
-    #ifdef DEBUG
-    DEBUG_PRINT
-    #endif
 }
 
 // Move конструктор
@@ -51,26 +34,14 @@ String::String(String&& original) noexcept : _chars(original._chars), _length(or
 	original._chars = nullptr;
     original._length = 0;
     original._capacity = 0;
-    #ifdef DEBUG
-    DEBUG_PRINT
-    #endif
 }
 
-String::~String() {
-	delete[] _chars;
-    #ifdef DEBUG
-    DEBUG_PRINT
-    #endif
-}
+String::~String() { delete[] _chars; }
 
 // Операторы
-char String::operator[](std::size_t i) const {
-    return _chars[i];
-}
+char String::operator[](std::size_t i) const { return _chars[i]; }
 
-char& String::operator[](std::size_t i) {
-    return _chars[i];
-}
+char& String::operator[](std::size_t i) { return _chars[i]; }
 
 // Copy assignment Использует copy-and-swap
 String& String::operator=(String other) {
@@ -80,89 +51,101 @@ String& String::operator=(String other) {
 	return *this;
 }
 
+String& String::operator=(const char* other) {
+    _length = std::strlen(other);
+    if (_length >= _capacity) {
+        delete[] _chars;
+        _capacity = _length * 2;
+        _chars = new char[_capacity];
+    }
+    std::copy(other, other + _length, _chars);
+    _chars[_length] = 0;
+    return *this;
+}
+
+
 String& String::operator+=(const String& other) {
-	std::size_t totalLength = _length + other._length;
-	if (totalLength + 1 >= _capacity) {
-		String newString = *this + other;
-		*this = newString;
-	}
-	else {
-		std::copy(other.begin(), other.end(), end());
-		_length = totalLength;
-		_chars[_length] = 0;
-	}
+	this->append(other.c_str(), other.length());
 	return *this;
 }
 
 String& String::operator+=(const char* other) {
-    std::size_t other_length = std::strlen(other);
-    std::size_t totalLength = _length + other_length;
+    this->append(other, std::strlen(other));
+	return *this;
+}
+
+// Другие функции
+char& String::at(std::size_t i) {
+    if (i < 0 || i >= _length) {
+        throw std::out_of_range("String index out of range");
+    }
+    return (*this)[i];
+}
+
+void String::append(const char* str, std::size_t str_length) {
+    std::size_t totalLength = _length + str_length;
 	if (totalLength + 1 >= _capacity) {
-		String newString = *this + other;
+		String newString = *this + str;
 		*this = newString;
 	}
 	else {
-		std::copy(other, other + other_length, _chars + _length);
+		std::copy(str, str + str_length, _chars + _length);
 		_length = totalLength;
 		_chars[_length] = 0;
 	}
-	return *this;
+}
+
+size_t String::length() const { return _length; }
+size_t String::capacity() const { return _capacity; }
+bool String::empty() const { return _length == 0; }
+const char* String::c_str() const { return _chars; }
+char* String::begin() const { return _chars; }
+char* String::end() const { return _chars + _length; }
+
+// Зануляет первый элемент, эффективно очищая строку
+void String::clear() {
+    _length = 0;
+    _chars[0] = 0;
+}
+
+// Полностью сбрасывает строку удаляя буфер и создавая новый с дефолтным размером
+void String::reset() {
+    _length = 0;
+    delete[] _chars;
+    _chars = new char[default_capacity]();
+    _capacity = default_capacity;
+}
+
+char * concat(const char* lhs, std::size_t lhs_length, const char* rhs, std::size_t rhs_length) {
+    char* buffer = new char[lhs_length + rhs_length + 1];
+	std::copy(lhs, lhs + lhs_length, buffer);
+	std::copy(rhs, rhs + rhs_length, buffer + lhs_length);
+	buffer[lhs_length + rhs_length] = 0;
+    return buffer;
 }
 
 // Внешние операторы
 String operator+(const String& lhs, const String& rhs) {
-	char* buffer = new char[lhs._length + rhs._length + 1];
-	std::copy(lhs.begin(), lhs.end(), buffer);
-	std::copy(rhs.begin(), rhs.end(), buffer + lhs._length);
-	buffer[lhs._length + rhs._length] = 0;
+	char* buffer = concat(lhs.c_str(), lhs.length(), rhs.c_str(), rhs.length());
     String result = String(buffer);
     delete[] buffer;
 	return result;
 }
 
 String operator+(const String& lhs, const char* rhs) {
-    std::size_t rhs_length = std::strlen(rhs);
-	char* buffer = new char[lhs._length + rhs_length + 1];
-	std::copy(lhs.begin(), lhs.end(), buffer);
-	std::copy(rhs, rhs + rhs_length, buffer + lhs._length);
-	buffer[lhs._length + rhs_length] = 0;
-	String result = String(buffer);
+    char* buffer = concat(lhs.c_str(), lhs.length(), rhs, std::strlen(rhs));
+    String result = String(buffer);
     delete[] buffer;
 	return result;
 }
 
-String operator+(const char* lhs, const String& rhs) {
-	return rhs + lhs;
-}
+String operator+(const char* lhs, const String& rhs) { return rhs + lhs; }
+bool operator==(const String& lhs, const char* rhs) { return std::strcmp(lhs.c_str(), rhs) == 0; }
+bool operator!=(const String& lhs, const char* rhs) { return !(lhs == rhs); }
+bool operator==(const String& lhs, const String &rhs) { return lhs == rhs.c_str(); }
+bool operator!=(const String& lhs, const String &rhs) { return !(lhs == rhs); }
 
-bool operator==(const String& lhs, const String &rhs) {
-    return std::strcmp(lhs._chars, rhs._chars) == 0;
-}
-
-bool operator!=(const String& lhs, const String &rhs) {
-    return !(lhs == rhs);
-}
-
-bool operator<(const String& lhs, const String &rhs) {
-    return std::strcmp(lhs._chars, rhs._chars) < 0;
-}
-
-bool operator>(const String& lhs, const String &rhs) {
-    return rhs < lhs;
-}
-
-bool operator<=(const String& lhs, const String &rhs) {
-    return !(lhs > rhs);
-}
-
-bool operator>=(const String& lhs, const String &rhs) {
-    return !(lhs < rhs);
-}
-
-std::ostream& operator<<(std::ostream& os, const String& rhs) {
-    os << rhs.c_str();
-    return os;
-}
+std::ostream& operator<<(std::ostream& os, const String& rhs) { return os << rhs.c_str(); }
 
 std::istream& operator>>(std::istream& is, String& rhs) {
     bool done = false;
@@ -199,50 +182,4 @@ std::istream& operator>>(std::istream& is, String& rhs) {
     rhs += buffer;
     delete[] buffer;
     return is;
-}
-
-// Другие функции
-char& String::at(std::size_t i) {
-    if (i < 0 || i >= _length) {
-        throw std::out_of_range("String index out of range");
-    }
-    return (*this)[i];
-}
-
-size_t String::length() const {
-	return _length;
-}
-
-size_t String::capacity() const {
-	return _capacity;
-}
-
-bool String::empty() const {
-    return _length == 0;
-}
-
-const char* String::c_str() const {
-	return _chars;
-}
-
-char* String::begin() const {
-    return _chars;
-}
-
-char* String::end() const {
-    return _chars + _length;
-}
-
-// Зануляет первый элемент, эффективно очищая строку
-void String::clear() {
-    _length = 0;
-    _chars[0] = 0;
-}
-
-// Полностью сбрасывает строку удаляя буфер и создавая новый с дефолтным размером
-void String::reset() {
-    _length = 0;
-    delete[] _chars;
-    _chars = new char[default_capacity]();
-    _capacity = default_capacity;
 }
