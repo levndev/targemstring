@@ -29,7 +29,7 @@ public:
 	char& operator[](std::size_t i);
 	// Copy assignment использует copy-and-swap
 	String& operator=(String other);
-
+	// Надо сделать copy assignment с сишной строкой
 	String& operator+=(const String& other);
 	String& operator+=(const char* other);
 
