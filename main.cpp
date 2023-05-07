@@ -62,6 +62,25 @@ void run_tests() {
         IS_TRUE(test.length() == 0);
         IS_TRUE(test.capacity() == 8);
     }
+    {
+        String test1 = String("test2");
+        String test2 = String(std::move(test1));
+        test1 += "test1";
+        IS_TRUE(test1 == "test1");
+        IS_TRUE(test2 == "test2");
+    }
+    {
+        String test1 = String("test2");
+        String test2 = String(std::move(test1));
+        test1 = "test1";
+        IS_TRUE(test1 == "test1");
+        IS_TRUE(test2 == "test2");
+    }
+    {
+        String test = String("gfedcba");
+        std::sort(test.begin(), test.end());
+        IS_TRUE(test == "abcdefg");
+    }
     std::cout << "All tests finished, " << tests_failed << " out of " << test_count << " tests failed" << std::endl;
 }
 
@@ -97,6 +116,9 @@ int main(int argc, char ** args)
             String line = String();
             std::cin >> line;
             strings.push_back(line);
+        }
+        for (int i = 0; i < string_count; i++) {
+            std::cout << strings[i] << std::endl;
         }
         std::sort(strings.begin(), strings.end(), case_insensitive_greater);
         std::cout << "Результат: " << std::endl;

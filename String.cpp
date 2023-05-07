@@ -9,10 +9,18 @@
 
 constexpr std::size_t default_capacity = 16;
 constexpr std::size_t default_input_buffer_size = 16;
-
+#define DEBUG_PRINT std::cout << "Debug : " << __FUNCTION__ << " line " << __LINE__ << std::endl;
 // Конструкторы
-String::String() : _length(0), _capacity(default_capacity), _chars(new char[default_capacity]()) {}
-String::String(int capacity) : _length(0), _capacity(capacity), _chars(new char[capacity]()) {}
+String::String() : _length(0), _capacity(default_capacity), _chars(new char[default_capacity]()) {
+    #ifdef DEBUG
+    DEBUG_PRINT
+    #endif
+}
+String::String(int capacity) : _length(0), _capacity(capacity), _chars(new char[capacity]()) {
+    #ifdef DEBUG
+    DEBUG_PRINT
+    #endif
+}
 
 String::String(const char* ptr)  {
     if (ptr == nullptr)
@@ -22,23 +30,37 @@ String::String(const char* ptr)  {
 	_chars = new char[_capacity];
 	std::copy(ptr, ptr + _length, _chars);
 	_chars[_length] = 0;
+    #ifdef DEBUG
+    DEBUG_PRINT
+    #endif
 }
 
 // Copy конструктор
 String::String(const String& original) : _length(original._length), _capacity(original._capacity) {
 	_chars = new char[_capacity];
 	std::copy(original._chars, original._chars + original._length, _chars);
+    _chars[_length] = 0;
+    #ifdef DEBUG
+    DEBUG_PRINT
+    #endif
 }
 
-//	Move конструктор
+// Move конструктор
+// Если после мува оригинал остается живым, то необходимо обязательно использовать String::reset(), иначе в будущем [] даст SegFault
 String::String(String&& original) noexcept : _chars(original._chars), _length(original._length), _capacity(original._capacity) {
 	original._chars = nullptr;
     original._length = 0;
     original._capacity = 0;
+    #ifdef DEBUG
+    DEBUG_PRINT
+    #endif
 }
 
 String::~String() {
 	delete[] _chars;
+    #ifdef DEBUG
+    DEBUG_PRINT
+    #endif
 }
 
 // Операторы
@@ -184,7 +206,7 @@ char& String::at(std::size_t i) {
     if (i < 0 || i >= _length) {
         throw std::out_of_range("String index out of range");
     }
-    return _chars[i];
+    return (*this)[i];
 }
 
 size_t String::length() const {
@@ -211,7 +233,16 @@ char* String::end() const {
     return _chars + _length;
 }
 
+// Зануляет первый элемент, эффективно очищая строку
 void String::clear() {
     _length = 0;
     _chars[0] = 0;
+}
+
+// Полностью сбрасывает строку удаляя буфер и создавая новый с дефолтным размером
+void String::reset() {
+    _length = 0;
+    delete[] _chars;
+    _chars = new char[default_capacity]();
+    _capacity = default_capacity;
 }

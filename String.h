@@ -18,7 +18,8 @@ public:
 	// Copy конструктор
 	String(const String& original);
 
-	//	Move конструктор
+	// Move конструктор
+	// Если после мува оригинал остается живым, то необходимо обязательно использовать String::reset(), иначе в будущем [] даст SegFault
 	String(String&& original) noexcept;
 
 	~String();
@@ -52,7 +53,10 @@ public:
 	char* begin() const;
 	char* end() const;
 	const char* c_str() const;
+	// Зануляет первый элемент, эффективно очищая строку
 	void clear();
+	// Полностью сбрасывает строку удаляя буфер и создавая новый с дефолтным размером
+	void reset();
 };
 
 #endif
