@@ -15,7 +15,10 @@ String::String(int capacity) : _length(0), _capacity(capacity), _chars(new char[
 
 String::String(const char* ptr)  {
     _length = std::strlen(ptr);
-    _capacity = _length * 2;
+    if (_length == 0)
+        _capacity = 1;
+    else
+        _capacity = _length * 2;
     _chars = new char[_capacity];
     std::copy(ptr, ptr + _length, _chars);
     _chars[_length] = 0;
@@ -53,12 +56,14 @@ String& String::operator=(String other) {
 
 String& String::operator=(const char* other) {
     _length = std::strlen(other);
-    if (_length >= _capacity) {
-        delete[] _chars;
-        _capacity = _length * 2;
-        _chars = new char[_capacity];
+    if (_length > 0) {
+        if (_length >= _capacity) {
+            delete[] _chars;
+            _capacity = _length * 2;
+            _chars = new char[_capacity];
+        }
+        std::copy(other, other + _length, _chars);
     }
-    std::copy(other, other + _length, _chars);
     _chars[_length] = 0;
     return *this;
 }
